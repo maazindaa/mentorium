@@ -1,0 +1,43 @@
+/* Стили сайта MENTORIUM. Перенесено из <style> index.html */
+:root { --brand-purple:#6916c8; --brand-blue:#117fff; }
+/* Funnel Display (woff2) */
+/* Пути откорректированы: файл style.css лежит в site/static/css => до корня repo ../../../ */
+@font-face { font-family: 'Funnel Display'; src: url('../../../Mentorium_designpack/Fonts/Funnel_Display/webfonts/FunnelDisplay-Regular.woff2') format('woff2'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family: 'Funnel Display'; src: url('../../../Mentorium_designpack/Fonts/Funnel_Display/webfonts/FunnelDisplay-Medium.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family: 'Funnel Display'; src: url('../../../Mentorium_designpack/Fonts/Funnel_Display/webfonts/FunnelDisplay-Bold.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family: 'Geometria'; src: url('../../../Mentorium_designpack/Fonts/Geometria/Geometria-Regular.ttf') format('truetype'); font-weight:400; font-style:normal; font-display:swap; }
+@font-face { font-family: 'Geometria'; src: url('../../../Mentorium_designpack/Fonts/Geometria/Geometria-Medium.ttf') format('truetype'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family: 'Geometria'; src: url('../../../Mentorium_designpack/Fonts/Geometria/Geometria-Bold.ttf') format('truetype'); font-weight:700; font-style:normal; font-display:swap; }
+
+.btn-brand {
+	display: inline-flex; align-items: center; justify-content: center;
+	padding: 0.75rem 1.5rem; border-radius: 0.75rem;
+	color: #fff; font-weight: 600; transition: filter .2s ease, transform .05s ease;
+	background-image: linear-gradient(90deg, var(--brand-purple), var(--brand-blue));
+	box-shadow: 0 6px 20px rgba(17,127,255,.25);
+}
+.btn-brand:hover { filter: brightness(0.97); }
+.btn-brand:active { transform: translateY(1px); }
+.gradient-text { background: linear-gradient(90deg, var(--brand-purple), var(--brand-blue)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* Ч/б фотографии */
+.img-bw { filter: grayscale(100%); }
+/* Бесконечная горизонтальная лента отзывов */
+.marquee { overflow: hidden; }
+.marquee-track { display: flex; gap: 1rem; width: max-content; animation: marquee 40s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+	.marquee-track { animation: none; }
+}
+
+/* Кнопки заданий ОГЭ */
+.task-btn { position:relative; display:flex; align-items:center; justify-content:center; height:44px; font-size:14px; font-weight:600; border-radius:10px; transition:.2s ease; user-select:none; }
+.task-btn--available { background:linear-gradient(90deg,var(--brand-purple),var(--brand-blue)); color:#fff; box-shadow:0 4px 12px rgba(17,127,255,.25); }
+.task-btn--available:hover { filter:brightness(.96); }
+.task-btn--available:active { transform:translateY(1px); }
+.task-btn--disabled { background:#f3f4f6; color:#9ca3af; border:1px dashed #d1d5db; cursor:not-allowed; }
+/* Убрали псевдоэлемент с троеточием, чтобы не было визуального артефакта */
+
+/* Плейсхолдер для отсутствующих изображений */
+.img-fallback { background:repeating-linear-gradient(45deg, #eef2ff, #eef2ff 8px, #e0e7ff 8px, #e0e7ff 16px); color:#64748b; font-size:10px; letter-spacing:.5px; text-transform:uppercase; }
+
