@@ -17,6 +17,9 @@ services:
   backend:
     build:
       context: ./backend
+    environment:
+      # Add both HTTP/HTTPS + optional www for production access
+      - ALLOWED_ORIGINS=http://localhost,http://localhost:3000,https://mentorium.tech,http://mentorium.tech,https://www.mentorium.tech,http://www.mentorium.tech
     networks:
       - dev
 
