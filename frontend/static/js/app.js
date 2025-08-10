@@ -486,48 +486,77 @@ function PdfModal({ activePdf, onClose }) {
 	const ua = navigator.userAgent;
 	const isIOS = /iPad|iPhone|iPod/.test(ua);
 	const isAndroid = /Android/.test(ua);
-	// iOS Safari плохо отображает PDF в <object>/<iframe> напрямую — используем gview
-	const useGoogleViewer = isIOS; 
-	const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(activePdf.src)}`;
-	const directUrl = activePdf.src;
-	const [showAdvice, setShowAdvice] = React.useState(false);
+	const isMobile = isIOS || isAndroid;
+	const [renderError, setRenderError] = useState(null);
+	const canvasRef = useRef(null);
+	const containerRef = useRef(null);
+	const [numPages, setNumPages] = useState(0);
+	const [loading, setLoading] = useState(true);
+	// Ограничим ширину на планшетах: если ширина окна > 640px и <= 1024px
+	const narrowClass = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth <= 1024 ? 'max-w-[900px]' : 'max-w-6xl';
+
 	useEffect(() => {
-		const t = setTimeout(() => setShowAdvice(true), 5000);
-		return () => clearTimeout(t);
-	}, [activePdf.src]);
+		if (!isMobile) return; // desktop пусть использует встроенный object
+		let cancelled = false;
+		(async () => {
+			try {
+				setLoading(true); setRenderError(null);
+				if (!window['pdfjsLib']) { setRenderError('pdf.js не загружен'); return; }
+				const pdfjsLib = window['pdfjsLib'];
+				// Некоторые CDN требуют указать workerSrc, но мы подгрузили отдельным скриптом
+				pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsLib.GlobalWorkerOptions.workerSrc || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
+				const loadingTask = pdfjsLib.getDocument({ url: activePdf.src });
+				const pdf = await loadingTask.promise;
+				if (cancelled) return;
+				setNumPages(pdf.numPages);
+				// Рендерим только первую страницу для быстроты (можно расширить позже)
+				const page = await pdf.getPage(1);
+				if (cancelled) return;
+				const viewport = page.getViewport({ scale: 1.2 });
+				const canvas = canvasRef.current;
+				if (!canvas) return;
+				const ctx = canvas.getContext('2d');
+				canvas.width = viewport.width; canvas.height = viewport.height;
+				await page.render({ canvasContext: ctx, viewport }).promise;
+			} catch (e) {
+				if (!cancelled) setRenderError('Ошибка отображения PDF');
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		})();
+		return () => { cancelled = true; };
+	}, [activePdf.src, isMobile]);
+
+	const directUrl = activePdf.src;
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
 			<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-			<div className="relative bg-white w-[95vw] h-[90vh] max-w-6xl rounded-xl shadow-2xl overflow-hidden">
-				<div className="flex items-center justify-between px-4 h-12 border-b">
+			<div className={`relative bg-white w-[95vw] h-[90vh] ${narrowClass} rounded-xl shadow-2xl overflow-hidden flex flex-col`} ref={containerRef}>
+				<div className="flex items-center justify-between px-4 h-12 border-b shrink-0">
 					<div className="font-medium truncate pr-2">{activePdf.title}</div>
 					<div className="flex items-center gap-2">
+						<span className="text-xs text-gray-500 hidden sm:inline">{numPages ? `${numPages} стр.` : ''}</span>
 						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть</a>
 						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} download>Скачать</a>
 						<button className="px-3 py-1.5 rounded-md border text-sm" onClick={onClose}>Закрыть</button>
 					</div>
 				</div>
-				<div className="w-full h-[calc(90vh-3rem)] bg-gray-50">
-					{/* Desktop */}
-					{!isIOS && !isAndroid && (
+				<div className="flex-1 bg-gray-50 overflow-auto relative">
+					{isMobile ? (
+						<div className="p-3 flex flex-col items-center">
+							{loading && <div className="text-sm text-gray-500 py-6">Загрузка...</div>}
+							{!loading && renderError && <div className="text-sm text-red-600 py-6">{renderError} <a className="underline" href={directUrl} target="_blank" rel="noreferrer">Открыть отдельно</a></div>}
+							{!loading && !renderError && <canvas ref={canvasRef} className="shadow border bg-white rounded" style={{ width: '100%', maxWidth: 900 }} />}
+							{!loading && !renderError && numPages > 1 && (
+								<div className="mt-4 text-xs text-gray-500">Показана первая страница (для экономии трафика). <button className="underline" onClick={() => window.open(directUrl,'_blank')}>Все страницы</button></div>
+							)}
+						</div>
+					) : (
 						<object data={directUrl} type="application/pdf" className="w-full h-full">
 							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={directUrl} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
 						</object>
 					)}
-					{/* Android Chrome обычно умеет рендерить PDF напрямую в <iframe> */}
-					{isAndroid && !useGoogleViewer && (
-						<iframe title="PDF" src={directUrl} className="w-full h-full" />
-					)}
-					{/* iOS fallback через Google Viewer */}
-					{useGoogleViewer && (
-						<iframe title="PDF" src={gviewUrl} className="w-full h-full" />
-					)}
 				</div>
-				{(isAndroid || isIOS) && showAdvice && (
-					<div className="absolute bottom-2 left-0 right-0 px-4 text-center text-xs text-gray-500">
-						Если не отображается, нажмите «Открыть» — файл откроется в системном просмотрщике.
-					</div>
-				)}
 			</div>
 		</div>
 	);
