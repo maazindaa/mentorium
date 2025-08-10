@@ -8,6 +8,7 @@ const routeMap = {
 	oge: { math: 'ОГЭ - Математика', russian: 'ОГЭ - Русский язык', physics: 'ОГЭ - Физика' },
 };
 
+// Детали курсов
 const courseDetails = {
 	'ЕГЭ - Математика': 'Полный курс подготовки к ЕГЭ по математике. 100+ часов видео, тесты и разборы.',
 	'ЕГЭ - Русский язык': 'Интенсивная подготовка к ЕГЭ по русскому. Грамматика, орфография и сочинения.',
@@ -17,7 +18,7 @@ const courseDetails = {
 	'ОГЭ - Физика': 'Подготовка к ОГЭ по физике: теория, задачи, практика.'
 };
 
-// Университеты + изображения (если файла нет, выпадет graceful fallback)
+// Университеты (логотипы)
 const topUniImages = [
 	{ abbr: 'МГУ',   name: 'МГУ им. М. В. Ломоносова', src: 'static/assets/images/universities/mgu.jpg' },
 	{ abbr: 'МФТИ',  name: 'МФТИ', src: 'static/assets/images/universities/mfti.jpg' },
@@ -43,7 +44,7 @@ const reviews = [
 	{ name: 'Арсений', meta: 'ОГЭ: русский, «5»', text: 'Полезные чек-листы и тренажёры. Перед экзаменом чувствовал себя спокойно и подготовлено.' },
 ];
 
-// PDF материалы
+// PDF материалы (примеры)
 const pdfs = [
 	{ title: 'Задание 20.1 — Выражения', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.1.pdf' },
 	{ title: 'Задание 20.2 — Уравнения', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.2.pdf' },
@@ -53,11 +54,11 @@ const pdfs = [
 	{ title: 'Задание 21.2 — Средняя скорость и движение по окружности', src: 'https://storage.yandexcloud.net/mentorium/pdf/21.2.pdf' },
 ];
 
-// Видео по заданиям (пример)
-const ogeMathVideo = 'https://storage.yandexcloud.net/mentorium/video/20%20zadanie%2016.02.2025.mp4'; // TODO: перенести в site/assets/videos и обновить путь
+// Видео по заданиям ОГЭ (пример)
+const ogeMathVideo = 'https://storage.yandexcloud.net/mentorium/video/20%20zadanie%2016.02.2025.mp4';
 const ogeTaskVideos = { 20: ogeMathVideo };
 
-// Данные тренажёра
+// Данные тренажёра (сокращённые примеры)
 const ogeTrainerData = {
 	20: [
 		{
@@ -487,94 +488,29 @@ function PdfModal({ activePdf, onClose }) {
 	const isIOS = /iPad|iPhone|iPod/.test(ua);
 	const isAndroid = /Android/.test(ua);
 	const isMobile = isIOS || isAndroid;
-	const [renderError, setRenderError] = useState(null);
-	const canvasRef = useRef(null);
-	const containerRef = useRef(null);
-	const [numPages, setNumPages] = useState(0);
-	const [loading, setLoading] = useState(true);
-	const [retry, setRetry] = useState(0);
-
-	// Динамическая подгрузка pdf.js если глобал не найден (некоторые мобильные блокируют первый CDN)
-	const ensurePdfJs = async () => {
-		if (window.pdfjsLib) return window.pdfjsLib;
-		const sources = [
-			'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js',
-			'https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.js',
-			'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js'
-		];
-		for (const src of sources) {
-			try {
-				await new Promise((res, rej) => {
-					const s = document.createElement('script');
-					s.src = src;
-					s.onload = () => res();
-					s.onerror = () => rej();
-					document.head.appendChild(s);
-				});
-				if (window.pdfjsLib) return window.pdfjsLib;
-			} catch (_) { /* пробуем следующий */ }
-		}
-		throw new Error('pdf.js недоступен');
-	};
-	// Ограничим ширину на планшетах: если ширина окна > 640px и <= 1024px
+	const fileUrl = activePdf.src.includes('response-content-disposition') ? activePdf.src : `${activePdf.src}${activePdf.src.includes('?') ? '&' : '?'}response-content-disposition=inline`;
+	const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(fileUrl)}`;
 	const narrowClass = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth <= 1024 ? 'max-w-[900px]' : 'max-w-6xl';
-
-	useEffect(() => {
-		if (!isMobile) return; // desktop вариант не трогаем
-		let cancelled = false;
-		(async () => {
-			try {
-				setLoading(true); setRenderError(null);
-				const pdfjsLib = window.pdfjsLib || await ensurePdfJs();
-				if (cancelled) return;
-				pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsLib.GlobalWorkerOptions.workerSrc || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
-				const loadingTask = pdfjsLib.getDocument({ url: activePdf.src });
-				const pdf = await loadingTask.promise;
-				if (cancelled) return;
-				setNumPages(pdf.numPages);
-				const page = await pdf.getPage(1);
-				if (cancelled) return;
-				const viewport = page.getViewport({ scale: 1.2 });
-				const canvas = canvasRef.current; if (!canvas) return;
-				const ctx = canvas.getContext('2d');
-				canvas.width = viewport.width; canvas.height = viewport.height;
-				await page.render({ canvasContext: ctx, viewport }).promise;
-			} catch (e) {
-				if (!cancelled) setRenderError(e.message.includes('pdf.js недоступен') ? 'pdf.js не загружен' : 'Ошибка отображения PDF');
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
-		})();
-		return () => { cancelled = true; };
-	}, [activePdf.src, isMobile, retry]);
-
-	const directUrl = activePdf.src;
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
 			<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-			<div className={`relative bg-white w-[95vw] h-[90vh] ${narrowClass} rounded-xl shadow-2xl overflow-hidden flex flex-col`} ref={containerRef}>
+			<div className={`relative bg-white w-[95vw] h-[90vh] ${narrowClass} rounded-xl shadow-2xl overflow-hidden flex flex-col`}>
 				<div className="flex items-center justify-between px-4 h-12 border-b shrink-0">
 					<div className="font-medium truncate pr-2">{activePdf.title}</div>
 					<div className="flex items-center gap-2">
-						<span className="text-xs text-gray-500 hidden sm:inline">{numPages ? `${numPages} стр.` : ''}</span>
-						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть</a>
-						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} download>Скачать</a>
+						<a className="text-sm font-medium text-brandPurple hover:underline" href={fileUrl} target="_blank" rel="noreferrer">Открыть</a>
+						<a className="text-sm font-medium text-brandPurple hover:underline" href={fileUrl} download>Скачать</a>
 						<button className="px-3 py-1.5 rounded-md border text-sm" onClick={onClose}>Закрыть</button>
 					</div>
 				</div>
-				<div className="flex-1 bg-gray-50 overflow-auto relative">
+				<div className="flex-1 bg-gray-50">
 					{isMobile ? (
-						<div className="p-3 flex flex-col items-center">
-							{loading && <div className="text-sm text-gray-500 py-6">Загрузка...</div>}
-							{!loading && renderError && <div className="text-sm text-red-600 py-6 flex flex-col items-center gap-2">{renderError} <a className="underline" href={directUrl} target="_blank" rel="noreferrer">Открыть отдельно</a> <button className="px-3 py-1.5 rounded-md border text-xs" onClick={()=>setRetry(r=>r+1)}>Повторить</button></div>}
-							{!loading && !renderError && <canvas ref={canvasRef} className="shadow border bg-white rounded" style={{ width: '100%', maxWidth: 900 }} />}
-							{!loading && !renderError && numPages > 1 && (
-								<div className="mt-4 text-xs text-gray-500">Показана первая страница (для экономии трафика). <button className="underline" onClick={() => window.open(directUrl,'_blank')}>Все страницы</button></div>
-							)}
+						<div className="w-full h-full flex items-center justify-center p-2">
+							<iframe title="PDF" src={gviewUrl} className="w-full h-full rounded bg-white" style={{ maxWidth: 900 }} />
 						</div>
 					) : (
-						<object data={directUrl} type="application/pdf" className="w-full h-full">
-							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={directUrl} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
+						<object data={fileUrl} type="application/pdf" className="w-full h-full">
+							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={fileUrl} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
 						</object>
 					)}
 				</div>
