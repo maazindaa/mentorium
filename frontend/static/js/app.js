@@ -492,40 +492,61 @@ function PdfModal({ activePdf, onClose }) {
 	const containerRef = useRef(null);
 	const [numPages, setNumPages] = useState(0);
 	const [loading, setLoading] = useState(true);
+	const [retry, setRetry] = useState(0);
+
+	// Динамическая подгрузка pdf.js если глобал не найден (некоторые мобильные блокируют первый CDN)
+	const ensurePdfJs = async () => {
+		if (window.pdfjsLib) return window.pdfjsLib;
+		const sources = [
+			'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js',
+			'https://unpkg.com/pdfjs-dist@4.2.67/build/pdf.min.js',
+			'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js'
+		];
+		for (const src of sources) {
+			try {
+				await new Promise((res, rej) => {
+					const s = document.createElement('script');
+					s.src = src;
+					s.onload = () => res();
+					s.onerror = () => rej();
+					document.head.appendChild(s);
+				});
+				if (window.pdfjsLib) return window.pdfjsLib;
+			} catch (_) { /* пробуем следующий */ }
+		}
+		throw new Error('pdf.js недоступен');
+	};
 	// Ограничим ширину на планшетах: если ширина окна > 640px и <= 1024px
 	const narrowClass = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth <= 1024 ? 'max-w-[900px]' : 'max-w-6xl';
 
 	useEffect(() => {
-		if (!isMobile) return; // desktop пусть использует встроенный object
+		if (!isMobile) return; // desktop вариант не трогаем
 		let cancelled = false;
 		(async () => {
 			try {
 				setLoading(true); setRenderError(null);
-				if (!window['pdfjsLib']) { setRenderError('pdf.js не загружен'); return; }
-				const pdfjsLib = window['pdfjsLib'];
-				// Некоторые CDN требуют указать workerSrc, но мы подгрузили отдельным скриптом
+				const pdfjsLib = window.pdfjsLib || await ensurePdfJs();
+				if (cancelled) return;
 				pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsLib.GlobalWorkerOptions.workerSrc || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
 				const loadingTask = pdfjsLib.getDocument({ url: activePdf.src });
 				const pdf = await loadingTask.promise;
 				if (cancelled) return;
 				setNumPages(pdf.numPages);
-				// Рендерим только первую страницу для быстроты (можно расширить позже)
 				const page = await pdf.getPage(1);
 				if (cancelled) return;
 				const viewport = page.getViewport({ scale: 1.2 });
-				const canvas = canvasRef.current;
-				if (!canvas) return;
+				const canvas = canvasRef.current; if (!canvas) return;
 				const ctx = canvas.getContext('2d');
 				canvas.width = viewport.width; canvas.height = viewport.height;
 				await page.render({ canvasContext: ctx, viewport }).promise;
 			} catch (e) {
-				if (!cancelled) setRenderError('Ошибка отображения PDF');
+				if (!cancelled) setRenderError(e.message.includes('pdf.js недоступен') ? 'pdf.js не загружен' : 'Ошибка отображения PDF');
 			} finally {
 				if (!cancelled) setLoading(false);
 			}
 		})();
 		return () => { cancelled = true; };
-	}, [activePdf.src, isMobile]);
+	}, [activePdf.src, isMobile, retry]);
 
 	const directUrl = activePdf.src;
 	return (
@@ -545,7 +566,7 @@ function PdfModal({ activePdf, onClose }) {
 					{isMobile ? (
 						<div className="p-3 flex flex-col items-center">
 							{loading && <div className="text-sm text-gray-500 py-6">Загрузка...</div>}
-							{!loading && renderError && <div className="text-sm text-red-600 py-6">{renderError} <a className="underline" href={directUrl} target="_blank" rel="noreferrer">Открыть отдельно</a></div>}
+							{!loading && renderError && <div className="text-sm text-red-600 py-6 flex flex-col items-center gap-2">{renderError} <a className="underline" href={directUrl} target="_blank" rel="noreferrer">Открыть отдельно</a> <button className="px-3 py-1.5 rounded-md border text-xs" onClick={()=>setRetry(r=>r+1)}>Повторить</button></div>}
 							{!loading && !renderError && <canvas ref={canvasRef} className="shadow border bg-white rounded" style={{ width: '100%', maxWidth: 900 }} />}
 							{!loading && !renderError && numPages > 1 && (
 								<div className="mt-4 text-xs text-gray-500">Показана первая страница (для экономии трафика). <button className="underline" onClick={() => window.open(directUrl,'_blank')}>Все страницы</button></div>
