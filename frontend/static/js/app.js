@@ -459,6 +459,8 @@ function MentoriumLanding() {
 
 // Вспомогательные компоненты модалок и тренажёра
 function PdfModal({ activePdf, onClose }) {
+	const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+	const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(activePdf.src)}`;
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
 			<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -466,15 +468,26 @@ function PdfModal({ activePdf, onClose }) {
 				<div className="flex items-center justify-between px-4 h-12 border-b">
 					<div className="font-medium truncate pr-2">{activePdf.title}</div>
 					<div className="flex items-center gap-2">
-						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} download>Скачать PDF</a>
+						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть</a>
+						<a className="text-sm font-medium text-brandPurple hover:underline" href={activePdf.src} download>Скачать</a>
 						<button className="px-3 py-1.5 rounded-md border text-sm" onClick={onClose}>Закрыть</button>
 					</div>
 				</div>
 				<div className="w-full h-[calc(90vh-3rem)] bg-gray-50">
-					<object data={activePdf.src} type="application/pdf" className="w-full h-full">
-						<div className="p-6 text-center text-gray-600">Не удалось отобразить PDF. <a className="text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть</a></div>
-					</object>
+					{!isMobile && (
+						<object data={activePdf.src} type="application/pdf" className="w-full h-full">
+							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
+						</object>
+					)}
+					{isMobile && (
+						<iframe title="PDF" src={gviewUrl} className="w-full h-full" allowFullScreen />
+					)}
 				</div>
+				{isMobile && (
+					<div className="absolute bottom-2 left-0 right-0 px-4 text-center text-xs text-gray-500">
+						Если документ не загрузился, нажмите «Открыть» выше.
+					</div>
+				)}
 			</div>
 		</div>
 	);
