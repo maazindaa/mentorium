@@ -170,6 +170,8 @@ function MentoriumLanding() {
 	const [view, setView] = useState('home');
 	const [selectedTask, setSelectedTask] = useState(null);
 	const [activePdf, setActivePdf] = useState(null);
+	// Мобильное меню
+	const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
 	// Состояния тренажёра
 	const [choices, setChoices] = useState([]);
@@ -329,19 +331,41 @@ function MentoriumLanding() {
 
 	return (
 		<div className="min-h-screen flex flex-col font-sans bg-white text-gray-900">
-			<header className="border-b border-gray-200 bg-white">
+			<header className="border-b border-gray-200 bg-white relative z-40">
 				<div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
 					<div className="flex items-center gap-3">
 						<SafeImg src={logoPath} alt="MENTORIUM" className="h-8 md:h-9" fallbackClass="rounded" />
 					</div>
-					<nav className="space-x-6 text-sm font-medium">
-						<button onClick={() => goHomeSection('ege')} className="hover:text-brandPurple">ЕГЭ</button>
-						<button onClick={() => goHomeSection('oge')} className="hover:text-brandPurple">ОГЭ</button>
-						<button onClick={() => goHomeSection('about')} className="hover:text-brandPurple">О нас</button>
-						<button onClick={() => goHomeSection('reviews')} className="hover:text-brandPurple">Отзывы</button>
-						<button onClick={() => goHomeSection('contacts')} className="hover:text-brandPurple">Контакты</button>
+					{/* Desktop nav */}
+					<nav className="hidden md:flex space-x-6 text-sm font-medium">
+						<button onClick={() => { goHomeSection('ege'); }} className="hover:text-brandPurple">ЕГЭ</button>
+						<button onClick={() => { goHomeSection('oge'); }} className="hover:text-brandPurple">ОГЭ</button>
+						<button onClick={() => { goHomeSection('about'); }} className="hover:text-brandPurple">О нас</button>
+						<button onClick={() => { goHomeSection('reviews'); }} className="hover:text-brandPurple">Отзывы</button>
+						<button onClick={() => { goHomeSection('contacts'); }} className="hover:text-brandPurple">Контакты</button>
 					</nav>
+					{/* Mobile hamburger */}
+					<button aria-label="Меню" aria-expanded={mobileNavOpen} onClick={() => setMobileNavOpen(o=>!o)} className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brandPurple focus:ring-offset-1">
+						<span className="sr-only">Открыть меню</span>
+						<div className="relative w-5 h-5">
+							<span className={`absolute left-0 top-1 block h-0.5 w-5 bg-current transition-transform ${mobileNavOpen ? 'translate-y-2 rotate-45' : ''}`}></span>
+							<span className={`absolute left-0 top-1/2 -mt-0.5 block h-0.5 w-5 bg-current transition-opacity ${mobileNavOpen ? 'opacity-0' : 'opacity-100'}`}></span>
+							<span className={`absolute left-0 bottom-1 block h-0.5 w-5 bg-current transition-transform ${mobileNavOpen ? '-translate-y-2 -rotate-45' : ''}`}></span>
+						</div>
+					</button>
 				</div>
+				{/* Mobile panel */}
+				{mobileNavOpen && (
+					<div className="md:hidden absolute inset-x-0 top-full bg-white border-b border-gray-200 shadow-sm animate-fadeIn">
+						<div className="px-4 py-4 flex flex-col gap-2 text-sm font-medium">
+							<button onClick={() => { goHomeSection('ege'); setMobileNavOpen(false); }} className="text-left px-4 py-2 rounded-lg hover:bg-gray-50">ЕГЭ</button>
+							<button onClick={() => { goHomeSection('oge'); setMobileNavOpen(false); }} className="text-left px-4 py-2 rounded-lg hover:bg-gray-50">ОГЭ</button>
+							<button onClick={() => { goHomeSection('about'); setMobileNavOpen(false); }} className="text-left px-4 py-2 rounded-lg hover:bg-gray-50">О нас</button>
+							<button onClick={() => { goHomeSection('reviews'); setMobileNavOpen(false); }} className="text-left px-4 py-2 rounded-lg hover:bg-gray-50">Отзывы</button>
+							<button onClick={() => { goHomeSection('contacts'); setMobileNavOpen(false); }} className="text-left px-4 py-2 rounded-lg hover:bg-gray-50">Контакты</button>
+						</div>
+					</div>
+				)}
 				<div className="h-1 bg-gradient-to-r from-brandPurple to-brandBlue" />
 			</header>
 			<section className="py-20 text-center">
