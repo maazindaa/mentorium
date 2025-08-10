@@ -41,3 +41,8 @@
 /* Плейсхолдер для отсутствующих изображений */
 .img-fallback { background:repeating-linear-gradient(45deg, #eef2ff, #eef2ff 8px, #e0e7ff 8px, #e0e7ff 16px); color:#64748b; font-size:10px; letter-spacing:.5px; text-transform:uppercase; }
 
+/* Универсальный градиент для фирменных кнопок (если нужна компактная версия без стандартных отступов .btn-brand) */
+.brand-gradient { background-image: linear-gradient(90deg, var(--brand-purple), var(--brand-blue)); color:#fff; }
+.brand-gradient:hover { filter: brightness(.97); }
+
+

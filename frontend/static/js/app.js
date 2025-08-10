@@ -621,7 +621,17 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 				})}
 			</div>
 			<div className="mt-4 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3">
-				<button className="btn-brand text-sm w-full sm:w-auto" onClick={() => { setChecked(true); setResults((prev) => { const r = [...prev]; r[qIndex] = isCorrect ? 'correct' : 'wrong'; return r; }); }} disabled={selected == null}>Проверить</button>
+				<button
+					className={`btn-brand text-sm w-full sm:w-auto transition ${checked ? 'opacity-40 cursor-not-allowed' : ''}`}
+					onClick={() => {
+						if (checked) return; // уже проверено
+						setChecked(true);
+						setResults((prev) => { const r = [...prev]; r[qIndex] = isCorrect ? 'correct' : 'wrong'; return r; });
+					}}
+					disabled={selected == null || checked}
+				>
+					Проверить
+				</button>
 				<button className="px-3 py-2 rounded-lg border text-sm w-full sm:w-auto" onClick={() => { setChoices((prev) => { const n = [...prev]; n[qIndex] = undefined; return n; }); setChecked(false); setActiveHint(null); setResults((prev) => { const r = [...prev]; r[qIndex] = undefined; return r; }); }}>Сбросить</button>
 				<div className="relative inline-block w-full sm:w-auto">
 					<button ref={hintsBtnRef} className="px-3 py-2 rounded-lg border text-sm w-full sm:w-auto text-center" onClick={() => setShowMenu((v) => !v)} aria-expanded={showMenu}>Подсказки</button>
@@ -637,7 +647,16 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 				</div>
 				<div className="mt-3 sm:mt-0 ml-auto flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2">
 					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 w-full sm:w-auto" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.max(0, i - 1)); }} disabled={qIndex === 0}>← Назад</button>
-					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 w-full sm:w-auto" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.min(items.length - 1, i + 1)); }} disabled={qIndex === items.length - 1}>Далее →</button>
+					<button
+						className={`px-3 py-2 rounded-lg text-sm w-full sm:w-auto transition ${checked ? 'brand-gradient shadow border-0 hover:opacity-90' : 'border disabled:opacity-50'}`}
+						onClick={() => {
+							if (!checked) return; // не подсвечиваем переход до проверки
+							setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.min(items.length - 1, i + 1));
+						}}
+						disabled={qIndex === items.length - 1 && !allAnswered}
+					>
+						Далее →
+					</button>
 					<button className={`px-3 py-2 rounded-lg border text-sm w-full sm:w-auto ${allAnswered ? 'border-green-600 text-green-700 hover:bg-green-50' : 'opacity-60 cursor-not-allowed'}`} onClick={() => allAnswered && setShowSummary(true)} disabled={!allAnswered}>Сводка</button>
 				</div>
 			</div>
