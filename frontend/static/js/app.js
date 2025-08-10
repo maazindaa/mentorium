@@ -54,7 +54,7 @@ const pdfs = [
 ];
 
 // Видео по заданиям (пример)
-const ogeMathVideo = '../Ivan/20 zadanie 16.02.2025.mp4'; // TODO: перенести в site/assets/videos и обновить путь
+const ogeMathVideo = 'https://storage.yandexcloud.net/mentorium/video/20%20zadanie%2016.02.2025.mp4'; // TODO: перенести в site/assets/videos и обновить путь
 const ogeTaskVideos = { 20: ogeMathVideo };
 
 // Данные тренажёра
