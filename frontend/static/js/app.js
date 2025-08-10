@@ -312,7 +312,7 @@ function MentoriumLanding() {
 							</div>
 						)}
 					</div>
-					<footer className="border-t border-gray-200 pt-0 text-center text-sm text-gray-500">
+					<footer className="border-t border-gray-200 mt-16 pt-0 text-center text-sm text-gray-500">
 						<div className="h-1 bg-gradient-to-r from-brandPurple to-brandBlue" />
 						<div className="py-6">© 2025 MENTORIUM. Все права защищены.</div>
 					</footer>
@@ -449,7 +449,7 @@ function MentoriumLanding() {
 					</div>
 				</div>
 			</section>
-			<footer className="border-t border-gray-200 pt-0 text-center text-sm text-gray-500">
+			<footer className="border-t border-gray-200 mt-20 pt-0 text-center text-sm text-gray-500">
 				<div className="h-1 bg-gradient-to-r from-brandPurple to-brandBlue" />
 				<div className="py-6">© 2025 MENTORIUM. Все права защищены.</div>
 			</footer>
@@ -600,7 +600,7 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 				<button className="btn-brand text-sm w-full sm:w-auto" onClick={() => { setChecked(true); setResults((prev) => { const r = [...prev]; r[qIndex] = isCorrect ? 'correct' : 'wrong'; return r; }); }} disabled={selected == null}>Проверить</button>
 				<button className="px-3 py-2 rounded-lg border text-sm w-full sm:w-auto" onClick={() => { setChoices((prev) => { const n = [...prev]; n[qIndex] = undefined; return n; }); setChecked(false); setActiveHint(null); setResults((prev) => { const r = [...prev]; r[qIndex] = undefined; return r; }); }}>Сбросить</button>
 				<div className="relative inline-block w-full sm:w-auto">
-					<button ref={hintsBtnRef} className="px-3 py-2 rounded-lg border text-sm w-full sm:w-auto text-left sm:text-center" onClick={() => setShowMenu((v) => !v)} aria-expanded={showMenu}>Подсказки</button>
+					<button ref={hintsBtnRef} className="px-3 py-2 rounded-lg border text-sm w-full sm:w-auto text-center" onClick={() => setShowMenu((v) => !v)} aria-expanded={showMenu}>Подсказки</button>
 					{showMenu && (
 						<div ref={hintsMenuRef} className="absolute z-20 top-full mt-2 right-0 w-72 rounded-xl border border-gray-200 bg-white shadow-xl p-2">
 							<div className="px-3 py-2 text-xs text-gray-500">Подсказки к задаче</div>
