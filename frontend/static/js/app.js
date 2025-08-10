@@ -648,7 +648,7 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 				<div className="mt-3 sm:mt-0 ml-auto flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2">
 					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 w-full sm:w-auto" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.max(0, i - 1)); }} disabled={qIndex === 0}>← Назад</button>
 					<button
-						className={`px-3 py-2 rounded-lg text-sm w-full sm:w-auto transition ${checked ? 'brand-gradient shadow border-0 hover:opacity-90' : 'border disabled:opacity-50'}`}
+						className={`text-sm w-full sm:w-auto transition ${checked ? 'btn-brand' : 'px-3 py-2 rounded-lg border disabled:opacity-50'}`}
 						onClick={() => {
 							if (!checked) return; // не подсвечиваем переход до проверки
 							setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.min(items.length - 1, i + 1));
