@@ -45,12 +45,12 @@ const reviews = [
 
 // PDF материалы
 const pdfs = [
-	{ title: 'Задание 20.1 — Выражения', src: '../PDF_files/20.1.pdf' },
-	{ title: 'Задание 20.2 — Уравнения', src: '../PDF_files/20.2.pdf' },
-	{ title: 'Задание 20.3 — Системы уравнений', src: '../PDF_files/20.3.pdf' },
-	{ title: 'Задание 20.4 — Неравенства', src: '../PDF_files/20.4.pdf' },
-	{ title: 'Задание 21.1 — Движение по прямой', src: '../PDF_files/21.1.pdf' },
-	{ title: 'Задание 21.2 — Средняя скорость и движение по окружности', src: '../PDF_files/21.2.pdf' },
+	{ title: 'Задание 20.1 — Выражения', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.1.pdf' },
+	{ title: 'Задание 20.2 — Уравнения', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.2.pdf' },
+	{ title: 'Задание 20.3 — Системы уравнений', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.3.pdf' },
+	{ title: 'Задание 20.4 — Неравенства', src: 'https://storage.yandexcloud.net/mentorium/pdf/20.4.pdf' },
+	{ title: 'Задание 21.1 — Движение по прямой', src: 'https://storage.yandexcloud.net/mentorium/pdf/21.1.pdf' },
+	{ title: 'Задание 21.2 — Средняя скорость и движение по окружности', src: 'https://storage.yandexcloud.net/mentorium/pdf/21.2.pdf' },
 ];
 
 // Видео по заданиям (пример)
