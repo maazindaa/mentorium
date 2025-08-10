@@ -596,7 +596,7 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 					);
 				})}
 			</div>
-			<div className="mt-4 flex items-center gap-3">
+			<div className="mt-4 flex flex-wrap items-center gap-3">
 				<button className="btn-brand text-sm" onClick={() => { setChecked(true); setResults((prev) => { const r = [...prev]; r[qIndex] = isCorrect ? 'correct' : 'wrong'; return r; }); }} disabled={selected == null}>Проверить</button>
 				<button className="px-3 py-2 rounded-lg border text-sm" onClick={() => { setChoices((prev) => { const n = [...prev]; n[qIndex] = undefined; return n; }); setChecked(false); setActiveHint(null); setResults((prev) => { const r = [...prev]; r[qIndex] = undefined; return r; }); }}>Сбросить</button>
 				<div className="relative inline-block">
@@ -611,10 +611,10 @@ function Trainer({ selectedTask, choices, setChoices, checked, setChecked, activ
 						</div>
 					)}
 				</div>
-				<div className="ml-auto flex items-center gap-2">
-					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.max(0, i - 1)); }} disabled={qIndex === 0}>← Назад</button>
-					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.min(items.length - 1, i + 1)); }} disabled={qIndex === items.length - 1}>Далее →</button>
-					<button className={`px-3 py-2 rounded-lg border text-sm ${allAnswered ? 'border-green-600 text-green-700 hover:bg-green-50' : 'opacity-60 cursor-not-allowed'}`} onClick={() => allAnswered && setShowSummary(true)} disabled={!allAnswered}>Сводка</button>
+				<div className="mt-3 sm:mt-0 ml-auto flex flex-col sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-2">
+					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 w-full sm:w-auto" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.max(0, i - 1)); }} disabled={qIndex === 0}>← Назад</button>
+					<button className="px-3 py-2 rounded-lg border text-sm disabled:opacity-50 w-full sm:w-auto" onClick={() => { setChecked(false); setActiveHint(null); setShowMenu(false); setQIndex((i) => Math.min(items.length - 1, i + 1)); }} disabled={qIndex === items.length - 1}>Далее →</button>
+					<button className={`px-3 py-2 rounded-lg border text-sm w-full sm:w-auto ${allAnswered ? 'border-green-600 text-green-700 hover:bg-green-50' : 'opacity-60 cursor-not-allowed'}`} onClick={() => allAnswered && setShowSummary(true)} disabled={!allAnswered}>Сводка</button>
 				</div>
 			</div>
 			{checked && (
