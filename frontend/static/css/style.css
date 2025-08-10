@@ -41,8 +41,28 @@
 /* Плейсхолдер для отсутствующих изображений */
 .img-fallback { background:repeating-linear-gradient(45deg, #eef2ff, #eef2ff 8px, #e0e7ff 8px, #e0e7ff 16px); color:#64748b; font-size:10px; letter-spacing:.5px; text-transform:uppercase; }
 
-/* Универсальный градиент для фирменных кнопок (если нужна компактная версия без стандартных отступов .btn-brand) */
-.brand-gradient { background-image: linear-gradient(90deg, var(--brand-purple), var(--brand-blue)); color:#fff; }
+/* Универсальный градиент (компактный). Добавлен блик + кроссбраузерные префиксы */
+.brand-gradient {
+	position: relative;
+	display: inline-flex; align-items: center; justify-content: center;
+	background: var(--brand-purple); /* fallback */
+	background-image: -webkit-linear-gradient(90deg, var(--brand-purple), var(--brand-blue));
+	background-image: linear-gradient(90deg, var(--brand-purple), var(--brand-blue));
+	color:#fff; font-weight:600;
+	box-shadow: 0 4px 14px rgba(17,127,255,.25);
+	transition: filter .25s ease, transform .08s ease;
+	overflow:hidden;
+}
 .brand-gradient:hover { filter: brightness(.97); }
+.brand-gradient:active { transform: translateY(1px); }
+/* Блик */
+.brand-gradient::after {
+	content:""; position:absolute; top:0; left:-150%; width:55%; height:100%;
+	background: linear-gradient(120deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.6) 50%, rgba(255,255,255,0) 100%);
+	mix-blend-mode: soft-light; pointer-events:none; transform: skewX(-20deg);
+	animation: shine 3s ease-in-out infinite;
+}
+@keyframes shine { 0% { left:-160%; } 60% { left:135%; } 100% { left:135%; } }
+@media (prefers-reduced-motion: reduce) { .brand-gradient::after { animation: none; } }
 
 
