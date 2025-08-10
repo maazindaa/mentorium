@@ -459,8 +459,18 @@ function MentoriumLanding() {
 
 // Вспомогательные компоненты модалок и тренажёра
 function PdfModal({ activePdf, onClose }) {
-	const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+	const ua = navigator.userAgent;
+	const isIOS = /iPad|iPhone|iPod/.test(ua);
+	const isAndroid = /Android/.test(ua);
+	// iOS Safari плохо отображает PDF в <object>/<iframe> напрямую — используем gview
+	const useGoogleViewer = isIOS; 
 	const gviewUrl = `https://docs.google.com/gview?embedded=1&url=${encodeURIComponent(activePdf.src)}`;
+	const directUrl = activePdf.src;
+	const [showAdvice, setShowAdvice] = React.useState(false);
+	useEffect(() => {
+		const t = setTimeout(() => setShowAdvice(true), 5000);
+		return () => clearTimeout(t);
+	}, [activePdf.src]);
 	return (
 		<div className="fixed inset-0 z-50 flex items-center justify-center">
 			<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -474,18 +484,24 @@ function PdfModal({ activePdf, onClose }) {
 					</div>
 				</div>
 				<div className="w-full h-[calc(90vh-3rem)] bg-gray-50">
-					{!isMobile && (
-						<object data={activePdf.src} type="application/pdf" className="w-full h-full">
-							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={activePdf.src} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
+					{/* Desktop */}
+					{!isIOS && !isAndroid && (
+						<object data={directUrl} type="application/pdf" className="w-full h-full">
+							<div className="p-6 text-center text-gray-600">Не удалось встроить PDF. <a className="text-brandPurple hover:underline" href={directUrl} target="_blank" rel="noreferrer">Открыть в новой вкладке</a></div>
 						</object>
 					)}
-					{isMobile && (
-						<iframe title="PDF" src={gviewUrl} className="w-full h-full" allowFullScreen />
+					{/* Android Chrome обычно умеет рендерить PDF напрямую в <iframe> */}
+					{isAndroid && !useGoogleViewer && (
+						<iframe title="PDF" src={directUrl} className="w-full h-full" />
+					)}
+					{/* iOS fallback через Google Viewer */}
+					{useGoogleViewer && (
+						<iframe title="PDF" src={gviewUrl} className="w-full h-full" />
 					)}
 				</div>
-				{isMobile && (
+				{(isAndroid || isIOS) && showAdvice && (
 					<div className="absolute bottom-2 left-0 right-0 px-4 text-center text-xs text-gray-500">
-						Если документ не загрузился, нажмите «Открыть» выше.
+						Если не отображается, нажмите «Открыть» — файл откроется в системном просмотрщике.
 					</div>
 				)}
 			</div>
